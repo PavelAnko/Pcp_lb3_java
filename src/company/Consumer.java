@@ -1,34 +1,32 @@
 package company;
 
 public class Consumer implements Runnable {
-    private final int itemNumbers;
+    private final int id;
+    private final int itemCount;
     private final Manager manager;
 
-    public Consumer(int itemNumbers, Manager manager) {
-        this.itemNumbers = itemNumbers;
+    public Consumer(int id, int itemCount, Manager manager) {
+        this.id = id;
+        this.itemCount = itemCount;
         this.manager = manager;
-
-        new Thread(this).start();
     }
 
     @Override
     public void run() {
-        for (int i = 0; i < itemNumbers; i++) {
-            String item;
+        for (int i = 0; i < itemCount; i++) {
             try {
                 manager.full.acquire();
-                Thread.sleep(1000);
                 manager.access.acquire();
 
-                item = manager.storage.get(0);
-                manager.storage.remove(0);
-                System.out.println("Took " + item);
+                String item = manager.storage.remove(0);
+                System.out.printf("[СПОЖИВАЧ %2d] Взяв  : %s%n", id, item);
 
                 manager.access.release();
                 manager.empty.release();
 
+                Thread.sleep(500);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                Thread.currentThread().interrupt();
             }
         }
     }
